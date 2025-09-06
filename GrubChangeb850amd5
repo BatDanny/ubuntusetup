@@ -1,0 +1,60 @@
+Of course. Here are the steps for the GRUB change, formatted in a clear and simple way that is perfect for a README file.
+
+---
+
+### Part 1: Configure GRUB to Expose Hardware Sensors
+
+This is a **one-time manual change** that must be performed before installing the drivers. It tells the Linux kernel to be more lenient about accessing hardware resources, which is necessary to make the motherboard's sensors visible to the operating system.
+
+**Step 1: Open the GRUB Configuration File**
+
+Open a terminal and use the `nano` text editor to open the GRUB configuration file. You need administrator privileges, so you must use `sudo`.
+
+```bash
+sudo nano /etc/default/grub
+```
+
+**Step 2: Find the Correct Line**
+
+Using your arrow keys, find the line that begins with `GRUB_CMDLINE_LINUX_DEFAULT`. It will typically look like this:
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+```
+
+**Step 3: Add the Kernel Parameter**
+
+You need to add `acpi_enforce_resources=lax` to the end of the text **inside the quotes**. Make sure to leave a space between the existing text and the new parameter.
+
+*   **Before:**
+    `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"`
+
+*   **After:**
+    `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash acpi_enforce_resources=lax"`
+
+> **Important:** Be careful not to delete `quiet`, `splash`, or any other options that might already be there. Just add the new text to the end.
+
+**Step 4: Save and Exit the Editor**
+
+To save the changes in `nano`:
+1.  Press `Ctrl` + `O` (the letter O, not zero).
+2.  Press `Enter` to confirm the filename.
+3.  Press `Ctrl` + `X` to exit the editor.
+
+**Step 5: Update the GRUB Bootloader**
+
+After saving the file, you must run the following command to apply the changes to the bootloader itself.
+
+```bash
+sudo update-grub
+```
+
+**Step 6: Reboot the System**
+
+The changes will only take effect after a full reboot.
+
+```bash
+sudo reboot
+```
+
+After your computer restarts, the hardware sensors will be visible to the system. You can now proceed with installing the drivers (for example, by running the installation script).

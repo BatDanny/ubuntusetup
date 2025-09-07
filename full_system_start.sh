@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ==================================================================================
-# DEFINITIVE MASTER SCRIPT v6.4 for Ubuntu Server 24.04 + KDE Plasma Rig
+# DEFINITIVE MASTER SCRIPT v6.8 for Ubuntu Server 24.04 + KDE Plasma Rig
 # ==================================================================================
 # This script automates the entire desktop setup process.
-# v6.4 corrects the final error by commenting out the unavailable gaming packages
-# in the apt install command, ensuring a successful run.
+# v6.8 adds a full suite of system validation, recovery, and maintenance tools
+# (Timeshift, BleachBit, HardInfo, and dependencies for OCCT).
 # ==================================================================================
 
 # --- PRE-FLIGHT CHECKS AND SETUP ---
@@ -24,7 +24,7 @@ START_SECONDS=$(date +%s)
 
 # --- STAGE 1: ENABLE UNIVERSE REPOSITORY ---
 echo " "
-echo ">>> [1/12] Enabling the 'universe' repository..."
+echo ">>> [1/13] Enabling the 'universe' repository..."
 apt-get update
 apt-get install -y software-properties-common
 add-apt-repository universe -y
@@ -32,24 +32,24 @@ apt-get update
 
 # --- STAGE 2: CORE DESKTOP INSTALLATION ---
 echo " "
-echo ">>> [2/12] Installing the minimal KDE Plasma Desktop..."
+echo ">>> [2/13] Installing the minimal KDE Plasma Desktop..."
 apt-get upgrade -y
 apt-get install -y kde-plasma-desktop sddm konsole
 
 # --- STAGE 3: SET SYSTEM TO BOOT TO GRAPHICAL MODE ---
 echo " "
-echo ">>> [3/12] Setting the system to boot into the graphical desktop..."
+echo ">>> [3/13] Setting the system to boot into the graphical desktop..."
 systemctl set-default graphical.target
 
 # --- STAGE 4: SYSTEM FIXES AND CONFIGURATION ---
 echo " "
-echo ">>> [4/12] Applying fixes for Ubuntu 24.04 + KDE..."
+echo ">>> [4/13] Applying fixes for Ubuntu 24.04 + KDE..."
 apt-get remove -y qml-module-qtquick-virtualkeyboard || true # Continue if already removed
 apt-get install -y kde-config-sddm
 
 # --- STAGE 5: ESSENTIAL UTILITIES (Network, Browser, VNC) ---
 echo " "
-echo ">>> [5/12] Installing Network Manager, Firefox, and TigerVNC..."
+echo ">>> [5/13] Installing Network Manager, Firefox, and TigerVNC..."
 apt-get install -y plasma-nm tigervnc-viewer
 add-apt-repository ppa:mozillateam/ppa -y
 echo '
@@ -60,14 +60,27 @@ Pin-Priority: 1001
 apt-get update
 apt-get install -y firefox
 
-# --- STAGE 6: CORE DEVELOPMENT TOOLS ---
+# --- STAGE 6: CORE DEVELOPMENT & MONITORING TOOLS ---
 echo " "
-echo ">>> [6/12] Installing Essential Development Tools..."
-apt-get install -y build-essential git python3-pip python3-venv cmake
+echo ">>> [6/13] Installing Essential Development & Monitoring Tools..."
+apt-get install -y build-essential git python3-pip python3-venv cmake lm-sensors
 
-# --- STAGE 7: ZSH + OH MY ZSH SHELL ENVIRONMENT SETUP (IDEMPOTENT) ---
+# --- STAGE 7: HARDWARE MONITORING CONFIGURATION ---
 echo " "
-echo ">>> [7/12] Setting up Zsh and Oh My Zsh..."
+echo ">>> [7/13] Configuring kernel modules for hardware monitoring..."
+if ! grep -q "^k10temp" /etc/modules; then
+    echo 'k10temp' | tee -a /etc/modules
+    echo "Added k10temp module to /etc/modules for AMD CPU temperature monitoring."
+fi
+
+# --- STAGE 8: SYSTEM VALIDATION & RECOVERY TOOLS ---
+echo " "
+echo ">>> [8/13] Installing System Validation, Recovery, and Maintenance Tools..."
+apt-get install -y timeshift bleachbit hardinfo unzip
+
+# --- STAGE 9: ZSH + OH MY ZSH SHELL ENVIRONMENT SETUP (IDEMPOTENT) ---
+echo " "
+echo ">>> [9/13] Setting up Zsh and Oh My Zsh..."
 apt-get install -y zsh
 if [ -n "$SUDO_USER" ]; then
     OH_MY_ZSH_DIR="/home/$SUDO_USER/.oh-my-zsh"
@@ -101,17 +114,17 @@ alias docker-clean="docker system prune -a --volumes"
     fi
 fi
 
-# --- STAGE 8: NVIDIA HOST DRIVER INSTALLATION ---
+# --- STAGE 10: NVIDIA HOST DRIVER INSTALLATION ---
 echo " "
-echo ">>> [8/12] Installing NVIDIA Host Graphics Drivers..."
+echo ">>> [10/13] Installing NVIDIA Host Graphics Drivers..."
 add-apt-repository ppa:graphics-drivers/ppa -y
 dpkg --add-architecture i386
 apt-get update
 ubuntu-drivers autoinstall
 
-# --- STAGE 9: GAMING ENVIRONMENT SETUP ---
+# --- STAGE 11: GAMING ENVIRONMENT SETUP ---
 echo " "
-echo ">>> [9/12] Installing Core Gaming Software..."
+echo ">>> [11/13] Installing Core Gaming Software..."
 apt-get install -y \
     wine64 \
     wine32 \
@@ -125,9 +138,9 @@ apt-get install -y \
     # heroic \
     # protonup-qt
 
-# --- STAGE 10: DOCKER AND NVIDIA GPU CONTAINER SUPPORT ---
+# --- STAGE 12: DOCKER AND NVIDIA GPU CONTAINER SUPPORT ---
 echo " "
-echo ">>> [10/12] Installing Docker and NVIDIA Container Toolkit..."
+echo ">>> [12/13] Installing Docker and NVIDIA Container Toolkit..."
 apt-get install -y ca-certificates curl
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -152,9 +165,9 @@ apt-get install -y nvidia-container-toolkit
 nvidia-ctk runtime configure --runtime=docker
 systemctl restart docker
 
-# --- STAGE 11: APPLY PERSONALIZED THEMES AND APPEARANCE ---
+# --- STAGE 13: APPLY PERSONALIZED THEMES AND APPEARANCE ---
 echo " "
-echo ">>> [11/12] Installing and Applying Your Personal Themes..."
+echo ">>> [13/13] Installing and Applying Your Personal Themes..."
 apt-get install -y sddm-theme-elarun
 mkdir -p /etc/sddm.conf.d
 echo "---
@@ -172,11 +185,6 @@ if [ -n "$SUDO_USER" ]; then
     sudo -u $SUDO_USER kwriteconfig5 --file ~/.config/ksplashrc --group KSplash --key Theme "org.kde.breeze.desktop"
 fi
 
-# --- STAGE 12: FINAL CLEANUP ---
-echo " "
-echo ">>> [12/12] Performing final cleanup..."
-apt-get autoremove -y
-
 # --- FINALIZATION ---
 echo " "
 echo "================================================================="
@@ -188,7 +196,19 @@ MINUTES=$((DURATION / 60))
 SECONDS_REMAINING=$((DURATION % 60))
 echo "Total execution time: ${MINUTES} minutes and ${SECONDS_REMAINING} seconds."
 echo "The full installation log has been saved to: $LOG_FILE"
-echo "A full reboot is required to apply all changes."
+echo ""
+echo ">>> [CRITICAL FINAL STEP] PROPERLY CONFIGURE HARDWARE SENSORS <<<"
+echo "To ensure your B650 chipset and all other hardware sensors are fully detected,"
+echo "you must run the following interactive command now. This will allow tools"
+echo "like MangoHud and System Monitor to show all available temperatures and fan speeds."
+echo ""
+echo "Run this command:"
+echo "    sudo sensors-detect"
+echo ""
+echo "It is safe to answer YES (by typing 'yes' and pressing Enter) to all questions."
+echo "This will ensure the necessary kernel modules are loaded on the next boot."
+echo ""
+echo "After running sensors-detect, a full reboot is required."
 echo "Run the command: sudo reboot"
 
-#1:10pm
+# 1:45pm

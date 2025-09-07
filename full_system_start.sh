@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==================================================================================
-# FINAL MASTER SCRIPT v5.0 for Ubuntu Server 24.04 + KDE Plasma Gaming & Docker Rig
+# FINAL MASTER SCRIPT v5.1 for Ubuntu Server 24.04 + KDE Plasma Gaming & Docker Rig
 # ==================================================================================
 # This script automates the entire desktop setup process with a focus on
 # resilience and diagnostics.
@@ -124,7 +124,7 @@ install_docker() {
         sudo usermod -aG docker $SUDO_USER
     fi
     curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/etc/apt/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
     sudo apt-get update
     sudo apt-get install -y nvidia-container-toolkit
     sudo systemctl restart docker
@@ -182,3 +182,7 @@ echo "The full installation log has been saved to: ${LOG_FILE}"
 echo "Please review it for any warnings or errors."
 echo "A full reboot is required to apply all changes."
 echo "Run the command: sudo reboot"
+
+# --- SCRIPT METADATA ---
+# Script Version: 5.1
+# Last Updated: 2025-09-07 15:35:00 UTC

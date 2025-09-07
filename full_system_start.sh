@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ==================================================================================
-# DEFINITIVE MASTER SCRIPT v6.3 for Ubuntu Server 24.04 + KDE Plasma Rig
+# DEFINITIVE MASTER SCRIPT v6.4 for Ubuntu Server 24.04 + KDE Plasma Rig
 # ==================================================================================
 # This script automates the entire desktop setup process.
-# v6.3 uses the sddm-theme-elarun login screen, which is available in the
-# Ubuntu 24.04 repositories, ensuring a successful and complete installation.
+# v6.4 corrects the final error by commenting out the unavailable gaming packages
+# in the apt install command, ensuring a successful run.
 # ==================================================================================
 
 # --- PRE-FLIGHT CHECKS AND SETUP ---
@@ -119,9 +119,11 @@ apt-get install -y \
     steam-devices \
     gamemode \
     mangohud \
-    goverlay \
-    heroic \
-    protonup-qt
+    goverlay
+    # The following packages are commented out as they were not found in the
+    # standard Ubuntu 24.04 repositories during the last test run.
+    # heroic \
+    # protonup-qt
 
 # --- STAGE 10: DOCKER AND NVIDIA GPU CONTAINER SUPPORT ---
 echo " "
@@ -153,10 +155,8 @@ systemctl restart docker
 # --- STAGE 11: APPLY PERSONALIZED THEMES AND APPEARANCE ---
 echo " "
 echo ">>> [11/12] Installing and Applying Your Personal Themes..."
-# Using sddm-theme-elarun as the replacement login screen theme.
 apt-get install -y sddm-theme-elarun
 mkdir -p /etc/sddm.conf.d
-# Setting the theme name to 'elarun'.
 echo "---
 [Theme]
 Current=elarun
@@ -191,4 +191,4 @@ echo "The full installation log has been saved to: $LOG_FILE"
 echo "A full reboot is required to apply all changes."
 echo "Run the command: sudo reboot"
 
-# 12:57
+#1:10pm

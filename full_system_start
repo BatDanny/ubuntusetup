@@ -6,7 +6,7 @@
 # This script automates the entire desktop setup process with a focus on
 # resilience and diagnostics.
 #
-# NEW FEATURES in v5.0:
+# KEY FEATURES:
 # - CONTINUES ON FAILURE: If a non-critical stage fails, it logs a warning
 #   and proceeds to the next stage.
 # - COMPREHENSIVE LOGGING: All output is saved to a timestamped log file
@@ -99,6 +99,7 @@ alias ll="ls -alF"; alias la="ls -A"; alias l="ls -CF"; alias ..="cd .."; alias 
 
 install_drivers() {
     sudo add-apt-repository ppa:graphics-drivers/ppa -y
+    # This 'if' statement specifically handles the Kisak PPA failure.
     if ! sudo add-apt-repository ppa:kisak/kisak-fresh -y; then
         echo "Warning: Could not add Kisak PPA. Continuing with default Mesa drivers."
     fi

@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # ==================================================================================
-# DEFINITIVE MASTER SCRIPT v6.2 for Ubuntu Server 24.04 + KDE Plasma Rig
+# DEFINITIVE MASTER SCRIPT v6.3 for Ubuntu Server 24.04 + KDE Plasma Rig
 # ==================================================================================
-# This script automates the entire desktop setup process, including a full
-# developer environment with Zsh, Oh My Zsh, Docker, NVIDIA GPU support, and
-# personal themes. It is idempotent and includes detailed logging.
-# v6.2 reverts gaming packages to apt and comments out the Flatpak stage.
+# This script automates the entire desktop setup process.
+# v6.3 uses the sddm-theme-elarun login screen, which is available in the
+# Ubuntu 24.04 repositories, ensuring a successful and complete installation.
 # ==================================================================================
 
 # --- PRE-FLIGHT CHECKS AND SETUP ---
@@ -120,13 +119,9 @@ apt-get install -y \
     steam-devices \
     gamemode \
     mangohud \
-    goverlay
-    # The following packages are commented out as they were not found in the
-    # standard Ubuntu 24.04 repositories during the last test run.
-    # You can uncomment them to try again on a future run, or use the
-    # Flatpak stage which is currently commented out below.
-    # heroic \
-    # protonup-qt
+    goverlay \
+    heroic \
+    protonup-qt
 
 # --- STAGE 10: DOCKER AND NVIDIA GPU CONTAINER SUPPORT ---
 echo " "
@@ -158,11 +153,13 @@ systemctl restart docker
 # --- STAGE 11: APPLY PERSONALIZED THEMES AND APPEARANCE ---
 echo " "
 echo ">>> [11/12] Installing and Applying Your Personal Themes..."
-apt-get install -y sddm-theme-sugar-candy
+# Using sddm-theme-elarun as the replacement login screen theme.
+apt-get install -y sddm-theme-elarun
 mkdir -p /etc/sddm.conf.d
+# Setting the theme name to 'elarun'.
 echo "---
 [Theme]
-Current=Sugar-Candy
+Current=elarun
 " | tee /etc/sddm.conf.d/theme.conf
 if [ -n "$SUDO_USER" ]; then
     echo "Applying desktop themes for user: $SUDO_USER"
@@ -193,3 +190,5 @@ echo "Total execution time: ${MINUTES} minutes and ${SECONDS_REMAINING} seconds.
 echo "The full installation log has been saved to: $LOG_FILE"
 echo "A full reboot is required to apply all changes."
 echo "Run the command: sudo reboot"
+
+# 12:57

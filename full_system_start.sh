@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # ==================================================================================
-# DEFINITIVE MASTER SCRIPT v6.8 for Ubuntu Server 24.04 + KDE Plasma Rig
+# DEFINITIVE MASTER SCRIPT v6.9 for Ubuntu Server 24.04 + KDE Plasma Rig
 # ==================================================================================
 # This script automates the entire desktop setup process.
-# v6.8 adds a full suite of system validation, recovery, and maintenance tools
-# (Timeshift, BleachBit, HardInfo, and dependencies for OCCT).
+# v6.9 adds the 'nvtop' utility for real-time GPU monitoring.
 # ==================================================================================
 
 # --- PRE-FLIGHT CHECKS AND SETUP ---
@@ -41,15 +40,26 @@ echo " "
 echo ">>> [3/13] Setting the system to boot into the graphical desktop..."
 systemctl set-default graphical.target
 
-# --- STAGE 4: SYSTEM FIXES AND CONFIGURATION ---
+# --- STAGE 4: CONFIGURE NETWORK MANAGEMENT FOR DESKTOP ---
 echo " "
-echo ">>> [4/13] Applying fixes for Ubuntu 24.04 + KDE..."
+echo ">>> [4/13] Handing network control over to NetworkManager for GUI..."
+echo '
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+' | tee /etc/netplan/99-network-manager.yaml
+netplan apply
+
+# --- STAGE 5: SYSTEM FIXES AND CONFIGURATION ---
+echo " "
+echo ">>> [5/13] Applying fixes for Ubuntu 24.04 + KDE..."
 apt-get remove -y qml-module-qtquick-virtualkeyboard || true # Continue if already removed
 apt-get install -y kde-config-sddm
 
-# --- STAGE 5: ESSENTIAL UTILITIES (Network, Browser, VNC) ---
+# --- STAGE 6: ESSENTIAL UTILITIES (Network, Browser, VNC) ---
 echo " "
-echo ">>> [5/13] Installing Network Manager, Firefox, and TigerVNC..."
+echo ">>> [6/13] Installing Network Manager Applet, Firefox, and TigerVNC..."
 apt-get install -y plasma-nm tigervnc-viewer
 add-apt-repository ppa:mozillateam/ppa -y
 echo '
@@ -60,23 +70,18 @@ Pin-Priority: 1001
 apt-get update
 apt-get install -y firefox
 
-# --- STAGE 6: CORE DEVELOPMENT & MONITORING TOOLS ---
+# --- STAGE 7: CORE DEVELOPMENT & MONITORING TOOLS ---
 echo " "
-echo ">>> [6/13] Installing Essential Development & Monitoring Tools..."
+echo ">>> [7/13] Installing Essential Development & Monitoring Tools..."
 apt-get install -y build-essential git python3-pip python3-venv cmake lm-sensors
 
-# --- STAGE 7: HARDWARE MONITORING CONFIGURATION ---
+# --- STAGE 8: HARDWARE MONITORING CONFIGURATION ---
 echo " "
-echo ">>> [7/13] Configuring kernel modules for hardware monitoring..."
+echo ">>> [8/13] Configuring kernel modules for hardware monitoring..."
 if ! grep -q "^k10temp" /etc/modules; then
     echo 'k10temp' | tee -a /etc/modules
     echo "Added k10temp module to /etc/modules for AMD CPU temperature monitoring."
 fi
-
-# --- STAGE 8: SYSTEM VALIDATION & RECOVERY TOOLS ---
-echo " "
-echo ">>> [8/13] Installing System Validation, Recovery, and Maintenance Tools..."
-apt-get install -y timeshift bleachbit hardinfo unzip
 
 # --- STAGE 9: ZSH + OH MY ZSH SHELL ENVIRONMENT SETUP (IDEMPOTENT) ---
 echo " "
@@ -132,7 +137,8 @@ apt-get install -y \
     steam-devices \
     gamemode \
     mangohud \
-    goverlay
+    goverlay \
+    nvtop
     # The following packages are commented out as they were not found in the
     # standard Ubuntu 24.04 repositories during the last test run.
     # heroic \
@@ -210,5 +216,3 @@ echo "This will ensure the necessary kernel modules are loaded on the next boot.
 echo ""
 echo "After running sensors-detect, a full reboot is required."
 echo "Run the command: sudo reboot"
-
-# 1:45pm
